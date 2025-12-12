@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>NEON指令集学习总结 | Tech Blog of Jing Huang</title>
+<meta name="keywords" content="NEON, ARM">
+<meta name="description" content="
+ARM NEON技术的全面学习指南，涵盖基础概念、指令详解、编程实践和性能优化
+
+📚 目录
+
+1. 基础概念
+2. NEON架构详解
+3. 指令分类与详解
+4. 编程模式
+5. 实际应用示例
+6. 性能优化技巧
+7. 常见问题与调试
+8. 学习资源
+
+
+1. 基础概念
+1.1 NEON简介
+
+
+ 什么是NEON？
+
+ARM Advanced SIMD扩展技术
+单指令多数据（SIMD）处理架构
+专为多媒体和信号处理设计
+
+
+
+ SIMD概念解释
+
+并行数据处理原理
+与标量处理的性能对比
+适用场景分析
+
+
+
+ NEON的优势
+
+提升计算密集型应用性能
+降低功耗
+硬件加速支持
+
+
+
+1.2 支持的处理器架构
+
+
+ ARM Cortex-A系列
+
+Cortex-A8, A9, A15, A53, A57, A72等
+ARMv7和ARMv8架构支持
+
+
+
+ 兼容性检查
+// 运行时检查NEON支持
+#ifdef __ARM_NEON
+    // NEON代码
+#endif
+
+
+
+2. NEON架构详解
+2.1 寄存器结构
+
+
+ D寄存器 (64位)">
+<meta name="author" content="JingHuang">
+<link rel="canonical" href="http://localhost:1313/posts/neon-learning-summary/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/neon-learning-summary/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .list::-webkit-scrollbar-thumb {
+                border-color: var(--code-bg);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Tech Blog of Jing Huang (Alt + H)">Tech Blog of Jing Huang</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/posts/" title="文章">
+                    <span>文章</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      NEON指令集学习总结
+    </h1>
+    <div class="post-meta"><span title='2024-12-09 17:00:00 +0800 CST'>December 9, 2024</span>&nbsp;·&nbsp;<span>JingHuang</span>
+
+</div>
+  </header> 
+  <div class="post-content"><blockquote>
+<p>ARM NEON技术的全面学习指南，涵盖基础概念、指令详解、编程实践和性能优化</p>
+</blockquote>
+<h2 id="-目录">📚 目录<a hidden class="anchor" aria-hidden="true" href="#-目录">#</a></h2>
+<ul>
+<li><a href="#1-%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5">1. 基础概念</a></li>
+<li><a href="#2-neon%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3">2. NEON架构详解</a></li>
+<li><a href="#3-%E6%8C%87%E4%BB%A4%E5%88%86%E7%B1%BB%E4%B8%8E%E8%AF%A6%E8%A7%A3">3. 指令分类与详解</a></li>
+<li><a href="#4-%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%BC%8F">4. 编程模式</a></li>
+<li><a href="#5-%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E7%A4%BA%E4%BE%8B">5. 实际应用示例</a></li>
+<li><a href="#6-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%8A%80%E5%B7%A7">6. 性能优化技巧</a></li>
+<li><a href="#7-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E8%B0%83%E8%AF%95">7. 常见问题与调试</a></li>
+<li><a href="#8-%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90">8. 学习资源</a></li>
+</ul>
+<hr>
+<h2 id="1-基础概念">1. 基础概念<a hidden class="anchor" aria-hidden="true" href="#1-基础概念">#</a></h2>
+<h3 id="11-neon简介">1.1 NEON简介<a hidden class="anchor" aria-hidden="true" href="#11-neon简介">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>什么是NEON？</strong></p>
+<ul>
+<li>ARM Advanced SIMD扩展技术</li>
+<li>单指令多数据（SIMD）处理架构</li>
+<li>专为多媒体和信号处理设计</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>SIMD概念解释</strong></p>
+<ul>
+<li>并行数据处理原理</li>
+<li>与标量处理的性能对比</li>
+<li>适用场景分析</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>NEON的优势</strong></p>
+<ul>
+<li>提升计算密集型应用性能</li>
+<li>降低功耗</li>
+<li>硬件加速支持</li>
+</ul>
+</li>
+</ul>
+<h3 id="12-支持的处理器架构">1.2 支持的处理器架构<a hidden class="anchor" aria-hidden="true" href="#12-支持的处理器架构">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>ARM Cortex-A系列</strong></p>
+<ul>
+<li>Cortex-A8, A9, A15, A53, A57, A72等</li>
+<li>ARMv7和ARMv8架构支持</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>兼容性检查</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 运行时检查NEON支持
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#ifdef __ARM_NEON
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// NEON代码
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#endif
+</span></span></span></code></pre></div></li>
+</ul>
+<hr>
+<h2 id="2-neon架构详解">2. NEON架构详解<a hidden class="anchor" aria-hidden="true" href="#2-neon架构详解">#</a></h2>
+<h3 id="21-寄存器结构">2.1 寄存器结构<a hidden class="anchor" aria-hidden="true" href="#21-寄存器结构">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>D寄存器 (64位)</strong></p>
+<ul>
+<li>D0-D31，共32个64位寄存器</li>
+<li>可存储多种数据类型组合</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>Q寄存器 (128位)</strong></p>
+<ul>
+<li>Q0-Q15，共16个128位寄存器</li>
+<li>由两个D寄存器组成：Qn = {D(2n+1), D2n}</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>寄存器映射关系</strong></p>
+<pre tabindex="0"><code>Q0 = D1:D0
+Q1 = D3:D2
+...
+Q15 = D31:D30
+</code></pre></li>
+</ul>
+<h3 id="22-数据类型支持">2.2 数据类型支持<a hidden class="anchor" aria-hidden="true" href="#22-数据类型支持">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>整数类型</strong></p>
+<table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>位宽</th>
+          <th>D寄存器容量</th>
+          <th>Q寄存器容量</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>8位</td>
+          <td>int8</td>
+          <td>8个元素</td>
+          <td>16个元素</td>
+      </tr>
+      <tr>
+          <td>16位</td>
+          <td>int16</td>
+          <td>4个元素</td>
+          <td>8个元素</td>
+      </tr>
+      <tr>
+          <td>32位</td>
+          <td>int32</td>
+          <td>2个元素</td>
+          <td>4个元素</td>
+      </tr>
+      <tr>
+          <td>64位</td>
+          <td>int64</td>
+          <td>1个元素</td>
+          <td>2个元素</td>
+      </tr>
+  </tbody>
+</table>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>浮点类型</strong></p>
+<ul>
+<li>单精度（32位）：D寄存器2个，Q寄存器4个</li>
+<li>双精度（64位）：D寄存器1个，Q寄存器2个</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>数据排列方式（Endianness）</strong></p>
+<ul>
+<li>小端序存储</li>
+<li>向量元素排列顺序</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="3-指令分类与详解">3. 指令分类与详解<a hidden class="anchor" aria-hidden="true" href="#3-指令分类与详解">#</a></h2>
+<h3 id="31-数据传输指令">3.1 数据传输指令<a hidden class="anchor" aria-hidden="true" href="#31-数据传输指令">#</a></h3>
+<h4 id="加载指令load-instructions">加载指令（Load Instructions）<a hidden class="anchor" aria-hidden="true" href="#加载指令load-instructions">#</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VLD1 - 单结构加载</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VLD1.32 {D0}, [R0]     ; 加载32位数据到D0
+VLD1.8  {Q0}, [R1]!    ; 加载后自增指针
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VLD2 - 双结构交错加载</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VLD2.16 {D0, D1}, [R0] ; 交错加载16位数据
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VLD3/VLD4 - 多结构加载</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VLD3.8 {D0, D1, D2}, [R0] ; 三路交错加载
+</code></pre></li>
+</ul>
+<h4 id="存储指令store-instructions">存储指令（Store Instructions）<a hidden class="anchor" aria-hidden="true" href="#存储指令store-instructions">#</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VST1 - 单结构存储</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VST1.32 {D0}, [R0]     ; 存储D0到内存
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>内存对齐要求</strong></p>
+<ul>
+<li>128位访问需要16字节对齐</li>
+<li>64位访问需要8字节对齐</li>
+<li>非对齐访问性能影响</li>
+</ul>
+</li>
+</ul>
+<h3 id="32-算术运算指令">3.2 算术运算指令<a hidden class="anchor" aria-hidden="true" href="#32-算术运算指令">#</a></h3>
+<h4 id="基本算术运算">基本算术运算<a hidden class="anchor" aria-hidden="true" href="#基本算术运算">#</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VADD - 向量加法</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VADD.I32 D0, D1, D2    ; D0 = D1 + D2 (32位整数)
+VADD.F32 Q0, Q1, Q2    ; Q0 = Q1 + Q2 (32位浮点)
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VSUB - 向量减法</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VSUB.I16 Q0, Q1, Q2    ; 16位整数向量减法
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VMUL - 向量乘法</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VMUL.I32 D0, D1, D2    ; 32位整数相乘
+VMUL.F32 Q0, Q1, Q2    ; 32位浮点相乘
+</code></pre></li>
+</ul>
+<h4 id="高级运算">高级运算<a hidden class="anchor" aria-hidden="true" href="#高级运算">#</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VMLA/VMLS - 乘加/乘减</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VMLA.F32 Q0, Q1, Q2    ; Q0 += Q1 * Q2
+VMLS.F32 Q0, Q1, Q2    ; Q0 -= Q1 * Q2
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VRECPE/VRSQRTE - 倒数估算</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VRECPE.F32 Q0, Q1      ; Q0 = 1/Q1 的估算值
+</code></pre></li>
+</ul>
+<h3 id="33-逻辑运算指令">3.3 逻辑运算指令<a hidden class="anchor" aria-hidden="true" href="#33-逻辑运算指令">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VAND - 按位与</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VAND Q0, Q1, Q2        ; Q0 = Q1 &amp; Q2
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VORR - 按位或</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VORR Q0, Q1, Q2        ; Q0 = Q1 | Q2
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VEOR - 按位异或</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VEOR Q0, Q1, Q2        ; Q0 = Q1 ^ Q2
+</code></pre></li>
+</ul>
+<h3 id="34-比较指令">3.4 比较指令<a hidden class="anchor" aria-hidden="true" href="#34-比较指令">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VCEQ - 相等比较</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VCEQ.I32 Q0, Q1, Q2    ; 逐元素比较相等
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VCGT/VCGE - 大于比较</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VCGT.S32 Q0, Q1, Q2    ; 有符号大于比较
+VCGE.U16 Q0, Q1, Q2    ; 无符号大于等于
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VCLT/VCLE - 小于比较</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VCLT.F32 Q0, Q1, Q2    ; 浮点小于比较
+</code></pre></li>
+</ul>
+<h3 id="35-数据转换指令">3.5 数据转换指令<a hidden class="anchor" aria-hidden="true" href="#35-数据转换指令">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VCVT - 类型转换</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VCVT.F32.S32 Q0, Q1    ; 整数转浮点
+VCVT.S32.F32 Q0, Q1    ; 浮点转整数
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>VMOV - 数据移动</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">VMOV.I32 Q0, #255      ; 立即数赋值
+</code></pre></li>
+</ul>
+<hr>
+<h2 id="4-编程模式">4. 编程模式<a hidden class="anchor" aria-hidden="true" href="#4-编程模式">#</a></h2>
+<h3 id="41-汇编编程">4.1 汇编编程<a hidden class="anchor" aria-hidden="true" href="#41-汇编编程">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>基本汇编框架</strong></p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">.section .text
+.global _start
+
+_start:
+    @ NEON指令序列
+    VLD1.32 {D0}, [R0]!
+    VADD.I32 D0, D0, D1
+    VST1.32 {D0}, [R2]!
+
+    @ 程序结束
+    mov r7, #1
+    swi 0
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>寄存器使用约定</strong></p>
+<ul>
+<li>调用者保存 vs 被调用者保存</li>
+<li>AAPCS规范遵循</li>
+</ul>
+</li>
+</ul>
+<h3 id="42-intrinsics编程">4.2 Intrinsics编程<a hidden class="anchor" aria-hidden="true" href="#42-intrinsics编程">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>头文件包含</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;arm_neon.h&gt;</span><span style="color:#75715e">
+</span></span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>基本数据类型</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 128位向量类型
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">uint8x16_t</span>   <span style="color:#75715e">// 16个8位无符号整数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int16x8_t</span>    <span style="color:#75715e">// 8个16位有符号整数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">float32x4_t</span>  <span style="color:#75715e">// 4个32位浮点数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 64位向量类型  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">uint32x2_t</span>   <span style="color:#75715e">// 2个32位无符号整数
+</span></span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>常用Intrinsics函数</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 加载/存储
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">uint32x4_t</span> <span style="color:#a6e22e">vld1q_u32</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint32_t</span> <span style="color:#f92672">*</span>ptr);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vst1q_u32</span>(<span style="color:#66d9ef">uint32_t</span> <span style="color:#f92672">*</span>ptr, <span style="color:#66d9ef">uint32x4_t</span> val);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 算术运算
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">uint32x4_t</span> <span style="color:#a6e22e">vaddq_u32</span>(<span style="color:#66d9ef">uint32x4_t</span> a, <span style="color:#66d9ef">uint32x4_t</span> b);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint32x4_t</span> <span style="color:#a6e22e">vmulq_u32</span>(<span style="color:#66d9ef">uint32x4_t</span> a, <span style="color:#66d9ef">uint32x4_t</span> b);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 比较运算
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">uint32x4_t</span> <span style="color:#a6e22e">vceqq_u32</span>(<span style="color:#66d9ef">uint32x4_t</span> a, <span style="color:#66d9ef">uint32x4_t</span> b);
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="43-编译器自动向量化">4.3 编译器自动向量化<a hidden class="anchor" aria-hidden="true" href="#43-编译器自动向量化">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>编译选项设置</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gcc -O3 -mfpu<span style="color:#f92672">=</span>neon -ftree-vectorize source.c
+</span></span><span style="display:flex;"><span>clang -O3 -mfpu<span style="color:#f92672">=</span>neon -fvectorize source.c
+</span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>代码编写提示</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 循环边界明确
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">1024</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    result[i] <span style="color:#f92672">=</span> a[i] <span style="color:#f92672">+</span> b[i];
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 使用restrict关键字
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">add_arrays</span>(<span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">restrict</span> a, 
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">restrict</span> b, 
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">restrict</span> result, 
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> n);
+</span></span></code></pre></div></li>
+</ul>
+<hr>
+<h2 id="5-实际应用示例">5. 实际应用示例<a hidden class="anchor" aria-hidden="true" href="#5-实际应用示例">#</a></h2>
+<h3 id="51-图像处理应用">5.1 图像处理应用<a hidden class="anchor" aria-hidden="true" href="#51-图像处理应用">#</a></h3>
+<h4 id="rgb到灰度转换">RGB到灰度转换<a hidden class="anchor" aria-hidden="true" href="#rgb到灰度转换">#</a></h4>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>算法原理</strong></p>
+<pre tabindex="0"><code>Gray = 0.299*R + 0.587*G + 0.114*B
+</code></pre></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>NEON实现</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">rgb_to_gray_neon</span>(<span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>rgb, <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>gray, <span style="color:#66d9ef">int</span> pixels) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8x8_t</span> r_coeff <span style="color:#f92672">=</span> <span style="color:#a6e22e">vdup_n_u8</span>(<span style="color:#ae81ff">76</span>);  <span style="color:#75715e">// 0.299 * 256
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8x8_t</span> g_coeff <span style="color:#f92672">=</span> <span style="color:#a6e22e">vdup_n_u8</span>(<span style="color:#ae81ff">150</span>); <span style="color:#75715e">// 0.587 * 256  
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8x8_t</span> b_coeff <span style="color:#f92672">=</span> <span style="color:#a6e22e">vdup_n_u8</span>(<span style="color:#ae81ff">29</span>);  <span style="color:#75715e">// 0.114 * 256
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> pixels; i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">8</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 加载RGB数据
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">uint8x8x3_t</span> rgb_data <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld3_u8</span>(rgb <span style="color:#f92672">+</span> i<span style="color:#f92672">*</span><span style="color:#ae81ff">3</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 分别提取R、G、B通道
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">uint8x8_t</span> r <span style="color:#f92672">=</span> rgb_data.val[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">uint8x8_t</span> g <span style="color:#f92672">=</span> rgb_data.val[<span style="color:#ae81ff">1</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">uint8x8_t</span> b <span style="color:#f92672">=</span> rgb_data.val[<span style="color:#ae81ff">2</span>];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 计算加权和
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">uint16x8_t</span> result <span style="color:#f92672">=</span> <span style="color:#a6e22e">vmull_u8</span>(r, r_coeff);
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> <span style="color:#a6e22e">vmlal_u8</span>(result, g, g_coeff);
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> <span style="color:#a6e22e">vmlal_u8</span>(result, b, b_coeff);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 右移8位并存储
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">uint8x8_t</span> gray_val <span style="color:#f92672">=</span> <span style="color:#a6e22e">vshrn_n_u16</span>(result, <span style="color:#ae81ff">8</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">vst1_u8</span>(gray <span style="color:#f92672">+</span> i, gray_val);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+</ul>
+<h4 id="图像滤波">图像滤波<a hidden class="anchor" aria-hidden="true" href="#图像滤波">#</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>3x3高斯滤波</strong></li>
+<li><input disabled="" type="checkbox"> <strong>边缘检测算法</strong></li>
+<li><input disabled="" type="checkbox"> <strong>图像缩放算法</strong></li>
+</ul>
+<h3 id="52-数字信号处理">5.2 数字信号处理<a hidden class="anchor" aria-hidden="true" href="#52-数字信号处理">#</a></h3>
+<h4 id="fir滤波器实现">FIR滤波器实现<a hidden class="anchor" aria-hidden="true" href="#fir滤波器实现">#</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>算法描述</strong></li>
+<li><input disabled="" type="checkbox"> <strong>NEON优化版本</strong>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">fir_filter_neon</span>(<span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>input, <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>output, 
+</span></span><span style="display:flex;"><span>                     <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>coeffs, <span style="color:#66d9ef">int</span> length, <span style="color:#66d9ef">int</span> taps) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// FIR滤波器的NEON实现
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> length <span style="color:#f92672">-</span> taps; i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">4</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float32x4_t</span> sum <span style="color:#f92672">=</span> <span style="color:#a6e22e">vdupq_n_f32</span>(<span style="color:#ae81ff">0.0f</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> taps; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float32x4_t</span> data <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(<span style="color:#f92672">&amp;</span>input[i <span style="color:#f92672">+</span> j]);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float32x4_t</span> coeff <span style="color:#f92672">=</span> <span style="color:#a6e22e">vdupq_n_f32</span>(coeffs[j]);
+</span></span><span style="display:flex;"><span>            sum <span style="color:#f92672">=</span> <span style="color:#a6e22e">vmlaq_f32</span>(sum, data, coeff);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">vst1q_f32</span>(<span style="color:#f92672">&amp;</span>output[i], sum);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="53-机器学习应用">5.3 机器学习应用<a hidden class="anchor" aria-hidden="true" href="#53-机器学习应用">#</a></h3>
+<h4 id="矩阵乘法优化">矩阵乘法优化<a hidden class="anchor" aria-hidden="true" href="#矩阵乘法优化">#</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>分块矩阵乘法</strong></li>
+<li><input disabled="" type="checkbox"> <strong>NEON加速实现</strong></li>
+</ul>
+<h4 id="向量点积计算">向量点积计算<a hidden class="anchor" aria-hidden="true" href="#向量点积计算">#</a></h4>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>基础实现</strong>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">float</span> <span style="color:#a6e22e">dot_product_neon</span>(<span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>a, <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>b, <span style="color:#66d9ef">int</span> n) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float32x4_t</span> sum_vec <span style="color:#f92672">=</span> <span style="color:#a6e22e">vdupq_n_f32</span>(<span style="color:#ae81ff">0.0f</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> n; i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">4</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float32x4_t</span> a_vec <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(<span style="color:#f92672">&amp;</span>a[i]);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float32x4_t</span> b_vec <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(<span style="color:#f92672">&amp;</span>b[i]);
+</span></span><span style="display:flex;"><span>        sum_vec <span style="color:#f92672">=</span> <span style="color:#a6e22e">vmlaq_f32</span>(sum_vec, a_vec, b_vec);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 水平求和
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">float32x2_t</span> sum_pair <span style="color:#f92672">=</span> <span style="color:#a6e22e">vadd_f32</span>(<span style="color:#a6e22e">vget_high_f32</span>(sum_vec), 
+</span></span><span style="display:flex;"><span>                                    <span style="color:#a6e22e">vget_low_f32</span>(sum_vec));
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">vget_lane_f32</span>(<span style="color:#a6e22e">vpadd_f32</span>(sum_pair, sum_pair), <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+</ul>
+<hr>
+<h2 id="6-性能优化技巧">6. 性能优化技巧<a hidden class="anchor" aria-hidden="true" href="#6-性能优化技巧">#</a></h2>
+<h3 id="61-内存访问优化">6.1 内存访问优化<a hidden class="anchor" aria-hidden="true" href="#61-内存访问优化">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>数据对齐要求</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 使用对齐的内存分配
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>aligned_data <span style="color:#f92672">=</span> (<span style="color:#66d9ef">float</span><span style="color:#f92672">*</span>)<span style="color:#a6e22e">aligned_alloc</span>(<span style="color:#ae81ff">16</span>, size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 检查对齐
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">assert</span>((<span style="color:#66d9ef">uintptr_t</span>)data <span style="color:#f92672">%</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>);
+</span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>缓存友好的访问模式</strong></p>
+<ul>
+<li>顺序访问优于随机访问</li>
+<li>利用空间局部性</li>
+<li>避免缓存行冲突</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>预取指令使用</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">__builtin_prefetch</span>(ptr, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>); <span style="color:#75715e">// 预取到L1缓存
+</span></span></span></code></pre></div></li>
+</ul>
+<h3 id="62-指令调度优化">6.2 指令调度优化<a hidden class="anchor" aria-hidden="true" href="#62-指令调度优化">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>流水线优化</strong></p>
+<ul>
+<li>指令并行发射</li>
+<li>避免数据依赖停顿</li>
+<li>合理安排指令顺序</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>延迟隐藏技术</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 交错计算和内存访问
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">float32x4_t</span> data1 <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(ptr1);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">float32x4_t</span> data2 <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(ptr2);  <span style="color:#75715e">// 隐藏加载延迟
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">float32x4_t</span> result <span style="color:#f92672">=</span> <span style="color:#a6e22e">vaddq_f32</span>(data1, data2);
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="63-循环优化策略">6.3 循环优化策略<a hidden class="anchor" aria-hidden="true" href="#63-循环优化策略">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>循环展开</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 4倍展开示例
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> n; i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">16</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 处理4组，每组4个元素
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">float32x4_t</span> a1 <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(<span style="color:#f92672">&amp;</span>a[i]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float32x4_t</span> a2 <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(<span style="color:#f92672">&amp;</span>a[i<span style="color:#f92672">+</span><span style="color:#ae81ff">4</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float32x4_t</span> a3 <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(<span style="color:#f92672">&amp;</span>a[i<span style="color:#f92672">+</span><span style="color:#ae81ff">8</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float32x4_t</span> a4 <span style="color:#f92672">=</span> <span style="color:#a6e22e">vld1q_f32</span>(<span style="color:#f92672">&amp;</span>a[i<span style="color:#f92672">+</span><span style="color:#ae81ff">12</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 并行处理4组数据
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>边界处理</strong></p>
+<ul>
+<li>处理非对齐的数据尾部</li>
+<li>掩码技术应用</li>
+</ul>
+</li>
+</ul>
+<h3 id="64-编译优化">6.4 编译优化<a hidden class="anchor" aria-hidden="true" href="#64-编译优化">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>编译选项组合</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>-O3 -mfpu<span style="color:#f92672">=</span>neon -mcpu<span style="color:#f92672">=</span>cortex-a15 -ftree-vectorize -funroll-loops
+</span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>性能分析工具</strong></p>
+<ul>
+<li><code>perf</code> 工具使用</li>
+<li>ARM DS-5 性能分析器</li>
+<li>自定义性能计数器</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="7-常见问题与调试">7. 常见问题与调试<a hidden class="anchor" aria-hidden="true" href="#7-常见问题与调试">#</a></h2>
+<h3 id="71-编译问题">7.1 编译问题<a hidden class="anchor" aria-hidden="true" href="#71-编译问题">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>编译器支持检查</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 检查NEON支持</span>
+</span></span><span style="display:flex;"><span>gcc -Q --help<span style="color:#f92672">=</span>target | grep neon
+</span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>链接问题解决</strong></p>
+<ul>
+<li>缺少数学库链接 <code>-lm</code></li>
+<li>交叉编译工具链配置</li>
+</ul>
+</li>
+</ul>
+<h3 id="72-运行时问题">7.2 运行时问题<a hidden class="anchor" aria-hidden="true" href="#72-运行时问题">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>内存对齐错误</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 检测未对齐访问
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#ifdef DEBUG
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">assert</span>((<span style="color:#66d9ef">uintptr_t</span>)ptr <span style="color:#f92672">%</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
+</span></span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>数据溢出处理</strong></p>
+<ul>
+<li>饱和算术指令使用</li>
+<li>范围检查和边界保护</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>精度问题</strong></p>
+<ul>
+<li>浮点运算精度损失</li>
+<li>累积误差控制</li>
+</ul>
+</li>
+</ul>
+<h3 id="73-性能调试">7.3 性能调试<a hidden class="anchor" aria-hidden="true" href="#73-性能调试">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>性能瓶颈分析</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 简单的性能测量
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">clock_t</span> start <span style="color:#f92672">=</span> <span style="color:#a6e22e">clock</span>();
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// NEON代码
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">clock_t</span> end <span style="color:#f92672">=</span> <span style="color:#a6e22e">clock</span>();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">double</span> cpu_time <span style="color:#f92672">=</span> ((<span style="color:#66d9ef">double</span>)(end <span style="color:#f92672">-</span> start)) <span style="color:#f92672">/</span> CLOCKS_PER_SEC;
+</span></span></code></pre></div></li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>对比测试框架</strong></p>
+<ul>
+<li>标量版本 vs NEON版本</li>
+<li>不同优化级别对比</li>
+<li>性能回归测试</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="8-学习资源">8. 学习资源<a hidden class="anchor" aria-hidden="true" href="#8-学习资源">#</a></h2>
+<h3 id="81-官方文档">8.1 官方文档<a hidden class="anchor" aria-hidden="true" href="#81-官方文档">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>ARM Developer Documentation</strong></p>
+<ul>
+<li><a href="https://developer.arm.com/documentation">ARM NEON Programmer&rsquo;s Guide</a></li>
+<li>Cortex-A Series Programmer&rsquo;s Guide</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>指令集参考</strong></p>
+<ul>
+<li>ARM Architecture Reference Manual</li>
+<li>NEON Intrinsics Reference</li>
+</ul>
+</li>
+</ul>
+<h3 id="82-开源项目参考">8.2 开源项目参考<a hidden class="anchor" aria-hidden="true" href="#82-开源项目参考">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>优秀的NEON实现</strong>
+<ul>
+<li>OpenCV中的NEON优化</li>
+<li>FFmpeg的ARM优化代码</li>
+<li>Ne10数学库</li>
+</ul>
+</li>
+</ul>
+<h3 id="83-开发工具">8.3 开发工具<a hidden class="anchor" aria-hidden="true" href="#83-开发工具">#</a></h3>
+<ul>
+<li>
+<p><input disabled="" type="checkbox"> <strong>编译器和IDE</strong></p>
+<ul>
+<li>GCC ARM工具链</li>
+<li>Clang/LLVM</li>
+<li>ARM Development Studio</li>
+</ul>
+</li>
+<li>
+<p><input disabled="" type="checkbox"> <strong>性能分析工具</strong></p>
+<ul>
+<li>Linux perf工具</li>
+<li>ARM Streamline</li>
+<li>Gprof性能分析器</li>
+</ul>
+</li>
+</ul>
+<h3 id="84-在线资源">8.4 在线资源<a hidden class="anchor" aria-hidden="true" href="#84-在线资源">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>学习网站</strong>
+<ul>
+<li>ARM Developer网站</li>
+<li>Stack Overflow相关问答</li>
+<li>GitHub上的示例代码</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="-学习笔记">📝 学习笔记<a hidden class="anchor" aria-hidden="true" href="#-学习笔记">#</a></h2>
+<h3 id="重要知识点">重要知识点<a hidden class="anchor" aria-hidden="true" href="#重要知识点">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> NEON寄存器可以同时作为D寄存器和Q寄存器使用</li>
+<li><input disabled="" type="checkbox"> 内存访问必须考虑对齐要求，16字节对齐获得最佳性能</li>
+<li><input disabled="" type="checkbox"> Intrinsics比手写汇编更易维护，性能相近</li>
+<li><input disabled="" type="checkbox"> 合理的循环展开可以显著提升性能</li>
+</ul>
+<h3 id="常见陷阱">常见陷阱<a hidden class="anchor" aria-hidden="true" href="#常见陷阱">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> ⚠️ 未检查处理器NEON支持就使用NEON指令</li>
+<li><input disabled="" type="checkbox"> ⚠️ 忽视内存对齐导致的性能下降</li>
+<li><input disabled="" type="checkbox"> ⚠️ 过度优化导致代码可读性下降</li>
+<li><input disabled="" type="checkbox"> ⚠️ 没有处理循环边界情况</li>
+</ul>
+<h3 id="最佳实践">最佳实践<a hidden class="anchor" aria-hidden="true" href="#最佳实践">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> ✅ 先写出正确的标量版本，再进行NEON优化</li>
+<li><input disabled="" type="checkbox"> ✅ 使用性能测试验证优化效果</li>
+<li><input disabled="" type="checkbox"> ✅ 保持代码的可读性和可维护性</li>
+<li><input disabled="" type="checkbox"> ✅ 针对具体硬件平台进行优化调整</li>
+</ul>
+<hr>
+<h2 id="-学习计划">🎯 学习计划<a hidden class="anchor" aria-hidden="true" href="#-学习计划">#</a></h2>
+<h3 id="第一阶段基础入门-1-2周">第一阶段：基础入门 (1-2周)<a hidden class="anchor" aria-hidden="true" href="#第一阶段基础入门-1-2周">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> 学习SIMD概念和NEON架构</li>
+<li><input disabled="" type="checkbox"> 掌握基本的数据类型和寄存器使用</li>
+<li><input disabled="" type="checkbox"> 练习简单的加法、乘法运算</li>
+</ul>
+<h3 id="第二阶段指令掌握-2-3周">第二阶段：指令掌握 (2-3周)<a hidden class="anchor" aria-hidden="true" href="#第二阶段指令掌握-2-3周">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> 熟悉各类NEON指令</li>
+<li><input disabled="" type="checkbox"> 学习Intrinsics编程</li>
+<li><input disabled="" type="checkbox"> 完成基础算法实现</li>
+</ul>
+<h3 id="第三阶段项目实践-3-4周">第三阶段：项目实践 (3-4周)<a hidden class="anchor" aria-hidden="true" href="#第三阶段项目实践-3-4周">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> 完成图像处理项目</li>
+<li><input disabled="" type="checkbox"> 实现数字信号处理算法</li>
+<li><input disabled="" type="checkbox"> 性能优化和调试</li>
+</ul>
+<h3 id="第四阶段高级优化-2-3周">第四阶段：高级优化 (2-3周)<a hidden class="anchor" aria-hidden="true" href="#第四阶段高级优化-2-3周">#</a></h3>
+<ul>
+<li><input disabled="" type="checkbox"> 深入学习性能优化技巧</li>
+<li><input disabled="" type="checkbox"> 分析实际项目中的性能瓶颈</li>
+<li><input disabled="" type="checkbox"> 掌握高级调试和分析方法</li>
+</ul>
+<hr>
+<p><em>最后更新时间：2025年12月12日</em></p>
+<blockquote>
+<p>💡 <strong>提示</strong>: 这是一份活跃的学习文档，将会定期更新学习进度，补充新的理解和实践经验。</p>
+</blockquote>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/neon/">NEON</a></li>
+      <li><a href="http://localhost:1313/tags/arm/">ARM</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">Tech Blog of Jing Huang</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

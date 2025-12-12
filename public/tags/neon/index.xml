@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>NEON on Tech Blog of Jing Huang</title>
+    <link>http://localhost:1313/tags/neon/</link>
+    <description>Recent content in NEON on Tech Blog of Jing Huang</description>
+    <generator>Hugo -- 0.152.2</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Mon, 09 Dec 2024 17:00:00 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/neon/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>NEON指令集学习总结</title>
+      <link>http://localhost:1313/posts/neon-learning-summary/</link>
+      <pubDate>Mon, 09 Dec 2024 17:00:00 +0800</pubDate>
+      <guid>http://localhost:1313/posts/neon-learning-summary/</guid>
+      <description>&lt;h1 id=&#34;neon指令集学习总结&#34;&gt;NEON指令集学习总结&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ARM NEON技术的全面学习指南，涵盖基础概念、指令详解、编程实践和性能优化&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;-目录&#34;&gt;📚 目录&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#1-%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5&#34;&gt;1. 基础概念&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#2-neon%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3&#34;&gt;2. NEON架构详解&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#3-%E6%8C%87%E4%BB%A4%E5%88%86%E7%B1%BB%E4%B8%8E%E8%AF%A6%E8%A7%A3&#34;&gt;3. 指令分类与详解&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#4-%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%BC%8F&#34;&gt;4. 编程模式&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#5-%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E7%A4%BA%E4%BE%8B&#34;&gt;5. 实际应用示例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#6-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%8A%80%E5%B7%A7&#34;&gt;6. 性能优化技巧&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#7-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E8%B0%83%E8%AF%95&#34;&gt;7. 常见问题与调试&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#8-%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90&#34;&gt;8. 学习资源&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;1-基础概念&#34;&gt;1. 基础概念&lt;/h2&gt;
+&lt;h3 id=&#34;11-neon简介&#34;&gt;1.1 NEON简介&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;strong&gt;什么是NEON？&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ARM Advanced SIMD扩展技术&lt;/li&gt;
+&lt;li&gt;单指令多数据（SIMD）处理架构&lt;/li&gt;
+&lt;li&gt;专为多媒体和信号处理设计&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;strong&gt;SIMD概念解释&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;并行数据处理原理&lt;/li&gt;
+&lt;li&gt;与标量处理的性能对比&lt;/li&gt;
+&lt;li&gt;适用场景分析&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;strong&gt;NEON的优势&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;提升计算密集型应用性能&lt;/li&gt;
+&lt;li&gt;降低功耗&lt;/li&gt;
+&lt;li&gt;硬件加速支持&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;12-支持的处理器架构&#34;&gt;1.2 支持的处理器架构&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;strong&gt;ARM Cortex-A系列&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Cortex-A8, A9, A15, A53, A57, A72等&lt;/li&gt;
+&lt;li&gt;ARMv7和ARMv8架构支持&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;strong&gt;兼容性检查&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// 运行时检查NEON支持
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#ifdef __ARM_NEON
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;// NEON代码
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#endif
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;2-neon架构详解&#34;&gt;2. NEON架构详解&lt;/h2&gt;
+&lt;h3 id=&#34;21-寄存器结构&#34;&gt;2.1 寄存器结构&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;strong&gt;D寄存器 (64位)&lt;/strong&gt;&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
