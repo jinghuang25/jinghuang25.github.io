@@ -1,6 +1,6 @@
 baseURL = 'https://jinghuang25.github.io'
 languageCode = 'zh-cn'
-title = 'Tech Blog of Jing Huang'
+title = "Jing's Technical Blog"
 theme = "PaperMod"
 
 [params]

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>ARM on Tech Blog of Jing Huang</title>
+    <title>ARM on Jing's Technical Blog</title>
     <link>http://localhost:1313/tags/arm/</link>
-    <description>Recent content in ARM on Tech Blog of Jing Huang</description>
+    <description>Recent content in ARM on Jing's Technical Blog</description>
     <generator>Hugo -- 0.152.2</generator>
     <language>zh-cn</language>
     <lastBuildDate>Mon, 09 Dec 2024 17:00:00 +0800</lastBuildDate>
