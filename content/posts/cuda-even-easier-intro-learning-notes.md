@@ -1,6 +1,6 @@
 ---
 title: "从一篇 NVIDIA 入门博客到 CUDA 核心概念:一次学习笔记"
-date: 2026-07-21T17:00:00+08:00
+date: 2026-07-21T12:00:00+08:00
 draft: false
 tags: ["CUDA", "GPU", "并行计算", "NVIDIA"]
 ---
@@ -431,5 +431,6 @@ nvcc add_prefetch.cu -o add_prefetch
 ---
 
 *最后更新时间:2026 年 7 月 21 日*
+
 
 > 💡 本文整理自一次以 NVIDIA 入门博客为起点的边读边问式学习,如有理解偏差欢迎指正。
