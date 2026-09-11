@@ -1,0 +1,22 @@
+baseURL = 'https://jinghuang25.github.io'
+languageCode = 'zh-cn'
+title = "Jing's Technical Blog"
+theme = "PaperMod"
+
+[params]
+  author = "JingHuang"
+  description = "Tech blog for learning and growth"
+  
+[menu]
+  [[menu.main]]
+    name = "首页"
+    url = "/"
+    weight = 1
+  [[menu.main]]
+    name = "文章"
+    url = "/posts/"
+    weight = 2
+  [[menu.main]]
+    name = "分类"
+    url = "/categories/"
+    weight = 3

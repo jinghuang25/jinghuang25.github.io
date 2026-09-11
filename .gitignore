@@ -1,0 +1,5 @@
+
+# Hugo build output (built fresh in CI; must not be committed)
+public/
+.hugo_build.lock
+resources/_gen/
